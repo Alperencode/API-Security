@@ -1,9 +1,16 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from pydantic import BaseModel
 import jwt
 from datetime import datetime, timedelta
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 app = FastAPI()
+
+# Initialize Limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
 
 # Secret key for JWT encoding/decoding
 SECRET_KEY = "mysecretkey"
@@ -44,7 +51,8 @@ def get_items_unsafe():
 
 
 @app.get("/items/safe")
-def get_items_safe(authorization: str = Header(None)):
+@limiter.limit("5/minute")  # Limit to 5 requests per minute per client
+def get_items_safe(request: Request, authorization: str = Header(None)):
     if authorization is None:
         raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -60,6 +68,11 @@ def get_items_safe(authorization: str = Header(None)):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+
+# Custom error handler for rate limit exceeded
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_error(request: Request, exc: RateLimitExceeded):
+    raise HTTPException(status_code=429, detail="Rate limit exceeded. Try again later.")
 
 if __name__ == "__main__":
     import uvicorn
