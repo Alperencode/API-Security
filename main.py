@@ -32,7 +32,7 @@ class TokenResponse(BaseModel):
 
 # Function to create a JWT
 def create_jwt_token(name: str) -> str:
-    expiration = datetime.utcnow() + timedelta(hours=1)
+    expiration = datetime.now() + timedelta(hours=1)
     payload = {"sub": name, "exp": expiration}
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     return token
