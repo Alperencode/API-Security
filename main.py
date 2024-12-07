@@ -17,11 +17,11 @@ SECRET_KEY = "mysecretkey"
 
 # Sample items dictionary
 items = {
-    "apple": "A sweet red fruit.",
-    "banana": "A yellow tropical fruit.",
-    "carrot": "A crunchy orange vegetable.",
-    "book": "A collection of written words.",
-    "laptop": "A portable personal computer."
+    "john@gmail.com": "jklmnb123",
+    "root@hotmail.com": "pass123wd",
+    "alperen@outlook.com": "strngpasswd02",
+    "user@gmail.com": "zxcvb0123",
+    "admin@gmail.com": "adminpasswd123"
 }
 
 
@@ -44,13 +44,13 @@ def get_token(name: str):
     return TokenResponse(token=token)
 
 
-@app.get("/items/unsafe")
+@app.get("/accounts/unsafe")
 def get_items_unsafe():
     # Return items without any authentication
     return items
 
 
-@app.get("/items/safe")
+@app.get("/accounts/safe")
 @limiter.limit("5/minute")  # Limit to 5 requests per minute per client
 def get_items_safe(request: Request, authorization: str = Header(None)):
     if authorization is None:
